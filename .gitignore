@@ -1,0 +1,5 @@
+# Generated at runtime
+setup.log
+
+# Claude Code session files
+.claude/

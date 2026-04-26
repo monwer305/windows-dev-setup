@@ -1,0 +1,22 @@
+{
+  "name": "Data Science",
+  "description": "Python-first data science environment with JupyterLab, pandas/numpy, and a local MySQL instance for practising SQL alongside Python analysis.",
+  "tools": [
+    "git",
+    "python",
+    "docker",
+    "mysql",
+    "dbeaver"
+  ],
+  "post_install": [
+    "pip install jupyterlab pandas numpy sqlalchemy pymysql matplotlib seaborn scikit-learn",
+    "docker pull mysql:8.0"
+  ],
+  "notes": {
+    "git": "Version control for notebooks and analysis scripts. Also enables DVC (Data Version Control) for tracking datasets.",
+    "python": "Primary language. pandas + numpy cover 95% of data manipulation needs; scikit-learn covers classical ML.",
+    "docker": "Run MySQL and other services in containers instead of installing them natively — keeps the host clean.",
+    "mysql": "Relational database for structured datasets and SQL practice. Essential for data engineering and ETL pipelines.",
+    "dbeaver": "GUI SQL client. Run queries, browse schemas, and export results without leaving the desktop."
+  }
+}

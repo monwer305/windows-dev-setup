@@ -1,0 +1,18 @@
+{
+  "name": "Frontend Development",
+  "description": "Minimal toolchain for modern frontend development with React, Next.js, or similar frameworks. Includes containerisation for running backend services locally.",
+  "tools": [
+    "git",
+    "node",
+    "docker"
+  ],
+  "post_install": [
+    "npm install -g vercel pnpm typescript",
+    "npm install -g @anthropic-ai/sdk"
+  ],
+  "notes": {
+    "git": "Version control and the foundation for CI/CD pipelines and Vercel/Netlify deployments.",
+    "node": "JavaScript runtime. Required to run the dev server, bundler (Vite/Webpack), and all npm tooling.",
+    "docker": "Run backend services (databases, APIs) locally via docker-compose without installing them natively."
+  }
+}
