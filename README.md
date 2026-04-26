@@ -87,7 +87,6 @@ Run at any time, independently of setup:
   ✅ kubectl      Client Version: v1.30.5
   ✅ helm         helm v3.16.2
   ✅ python       Python 3.12.1
-  ✅ nginx        nginx/1.27.2
   ✅ mysql        Ver 8.4.8 for Win64 on x86_64
   ✅ git          git version 2.54.0.windows.1
   ✅ node         Node v24.15.0  npm 11.13.0
@@ -95,7 +94,7 @@ Run at any time, independently of setup:
   ✅ dbeaver      DBeaver (found)
 
 ------------------------------------------
-  14/14 tools installed successfully
+  11/11 tools installed successfully
 ==========================================
 ```
 
