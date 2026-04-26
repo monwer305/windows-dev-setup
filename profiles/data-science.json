@@ -9,8 +9,6 @@
     "dbeaver"
   ],
   "post_install": [
-    "pip install jupyterlab pandas numpy sqlalchemy pymysql matplotlib seaborn scikit-learn",
-    "docker pull mysql:8.0"
   ],
   "notes": {
     "git": "Version control for notebooks and analysis scripts. Also enables DVC (Data Version Control) for tracking datasets.",

@@ -2,32 +2,33 @@
 <#
 .SYNOPSIS
     Installs nginx for Windows.
-    Uses Chocolatey as primary (most reliable on Windows).
-    winget fallback: nginx.nginx
-    Installs as a Windows service via the NSSM wrapper bundled in the choco package.
+    winget IDs: freenginx.nginx (primary), nginxinc.nginx (fallback)
+    choco: nginx (fallback when winget unavailable)
 #>
 param([switch]$Uninstall)
 
 $ErrorActionPreference = "Continue"
 . "$PSScriptRoot\common.ps1"
 
-$Tool     = "nginx"
-$WingetId = "nginx.nginx"
-$ChocoId  = "nginx"
-
-# Common install paths to probe for the nginx binary
-$NginxPaths = @(
-    "$env:ProgramData\chocolatey\lib\nginx\tools",
-    "$env:ProgramFiles\nginx",
-    "C:\nginx"
-)
+$Tool        = "nginx"
+$WingetId    = "freenginx.nginx"
+$WingetIdAlt = "nginxinc.nginx"
+$ChocoId     = "nginx"
 
 function Get-NginxVersion {
+    # Refresh PATH so WinGet-installed nginx shim is visible
+    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" +
+                [System.Environment]::GetEnvironmentVariable("PATH","User")
     if (Test-CommandExists "nginx") {
         $v = nginx -v 2>&1
         return $v.ToString().Trim()
     }
-    foreach ($p in $NginxPaths) {
+    foreach ($p in @(
+        "$env:LOCALAPPDATA\Microsoft\WinGet\Links",
+        "$env:ProgramData\chocolatey\lib\nginx\tools",
+        "$env:ProgramFiles\nginx",
+        "C:\nginx"
+    )) {
         $exe = Join-Path $p "nginx.exe"
         if (Test-Path $exe) {
             $v = & $exe -v 2>&1
@@ -41,8 +42,11 @@ try {
     # ─── Uninstall ────────────────────────────────────────────────────────────
     if ($Uninstall) {
         Stop-Service nginx -ErrorAction SilentlyContinue
-        if (Test-Choco)     { Uninstall-ViaChoco $ChocoId }
-        elseif (Test-Winget) { Uninstall-ViaWinget $WingetId $Tool }
+        if (Test-Winget) {
+            winget uninstall --id $WingetId --silent 2>$null
+            winget uninstall --id $WingetIdAlt --silent 2>$null
+        }
+        if (Test-Choco) { Uninstall-ViaChoco $ChocoId }
         Write-Success "✅ $Tool uninstalled"
         exit 0
     }
@@ -57,13 +61,13 @@ try {
     # ─── Install ──────────────────────────────────────────────────────────────
     $ok = $false
 
-    # Prefer Chocolatey for nginx — its package includes service wrappers
-    if (Test-Choco) {
-        $ok = Install-ViaChoco $ChocoId
+    if (Test-Winget) {
+        $ok = Install-ViaWinget $WingetId $Tool
+        if (-not $ok) { $ok = Install-ViaWinget $WingetIdAlt $Tool }
     }
 
-    if (-not $ok -and (Test-Winget)) {
-        $ok = Install-ViaWinget $WingetId $Tool
+    if (-not $ok -and (Test-Choco)) {
+        $ok = Install-ViaChoco $ChocoId
     }
 
     if (-not $ok) {
@@ -72,8 +76,17 @@ try {
     }
 
     Refresh-Path
-    Write-Success "✅ $Tool installed"
-    Write-Info "  Start nginx with: Start-Service nginx   (or: nginx)"
+
+    # Verify the binary is actually present after install
+    $postVer = Get-NginxVersion
+    if (-not $postVer) {
+        Write-Warn "⚠️  Package manager reported success but nginx binary not found."
+        Write-Warn "   Try installing manually: https://nginx.org/en/docs/windows.html"
+        exit 1
+    }
+
+    Write-Success "✅ $Tool installed — $postVer"
+    Write-Info "  Run nginx with: nginx"
     exit 0
 
 } catch {

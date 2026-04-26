@@ -17,13 +17,15 @@ $ChocoId  = "postman"
 # Postman doesn't put itself on PATH — check well-known install locations
 function Test-PostmanInstalled {
     $locations = @(
-        "$env:LOCALAPPDATA\Programs\Postman\Postman.exe",
-        "$env:APPDATA\Postman\app-*\Postman.exe",
+        "$env:LOCALAPPDATA\Postman\Postman.exe",          # winget default
+        "$env:LOCALAPPDATA\Programs\Postman\Postman.exe", # older installs
         "$env:ProgramFiles\Postman\Postman.exe"
     )
     foreach ($loc in $locations) {
         if (Get-Item $loc -ErrorAction SilentlyContinue) { return $true }
     }
+    # Squirrel-style versioned subfolder: %LOCALAPPDATA%\Postman\app-x.y.z\Postman.exe
+    if (Get-Item "$env:LOCALAPPDATA\Postman\app-*\Postman.exe" -ErrorAction SilentlyContinue) { return $true }
     return $false
 }
 
@@ -66,4 +68,5 @@ try {
     Write-Err "❌ $Tool installation failed: $_"
     exit 1
 }
+
 

@@ -10,18 +10,12 @@
     "python",
     "nginx",
     "mysql",
-    "redis",
-    "rabbitmq",
     "git",
     "node",
     "postman",
     "dbeaver"
   ],
   "post_install": [
-    "pip install fastapi uvicorn sqlalchemy pymysql celery redis pydantic python-dotenv httpx pytest --quiet",
-    "docker pull mysql:8.0",
-    "docker pull redis:alpine",
-    "docker pull rabbitmq:3-management"
   ],
   "notes": {
     "wsl": "Windows Subsystem for Linux provides a real Linux environment. Required by Docker Desktop for its backend VM and gives access to native Linux tooling.",
@@ -32,8 +26,6 @@
     "python": "Primary language for the microservices. FastAPI + uvicorn is the dominant async Python web stack in 2024 for building high-performance APIs.",
     "nginx": "High-performance reverse proxy and load balancer. Used as the API gateway in front of microservices, handling TLS termination and routing.",
     "mysql": "Relational database for persistent data. MySQL 8.0 is widely adopted in microservices that require ACID transactions (orders, users, billing).",
-    "redis": "In-memory key-value store used for caching, session storage, and as a Celery message broker backend. Sub-millisecond latency for hot-path data.",
-    "rabbitmq": "AMQP message broker for async inter-service communication. Services publish events (e.g. 'order.created') and consumers process them independently via Celery.",
     "git": "Version control. Required by every workflow — source control, CI/CD triggers, Helm chart versioning, and team collaboration.",
     "node": "Node.js runtime needed for frontend tooling (Vite, Next.js), as well as scripts and developer tools that ship as npm packages.",
     "postman": "GUI tool for designing, testing, and documenting REST and GraphQL APIs. Supports environment variables for switching between local/staging/prod endpoints.",

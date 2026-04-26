@@ -3,7 +3,7 @@
 .SYNOPSIS
     Installs DBeaver Community Edition — universal GUI database client.
     Supports MySQL, PostgreSQL, SQLite, and many others.
-    winget ID: dbeaver.dbeaver  |  choco: dbeaver
+    winget ID: DBeaver.DBeaver.Community  |  choco: dbeaver
 #>
 param([switch]$Uninstall)
 
@@ -11,11 +11,12 @@ $ErrorActionPreference = "Continue"
 . "$PSScriptRoot\common.ps1"
 
 $Tool     = "DBeaver"
-$WingetId = "dbeaver.dbeaver"
+$WingetId = "DBeaver.DBeaver.Community"
 $ChocoId  = "dbeaver"
 
 function Test-DBeaVerInstalled {
     $locations = @(
+        "$env:LOCALAPPDATA\DBeaver\dbeaver.exe",           # winget default (current user)
         "$env:ProgramFiles\DBeaver\dbeaver.exe",
         "$env:LOCALAPPDATA\Programs\DBeaver\dbeaver.exe",
         "$env:ProgramFiles\dbeaver-ce\dbeaver.exe"
@@ -58,10 +59,19 @@ try {
         exit 1
     }
 
-    Write-Success "✅ $Tool installed"
-    Write-Info "  Launch from Start Menu > DBeaver"
-    Write-Info "  Connect to MySQL: New Connection > MySQL > host: localhost"
-    exit 0
+    Refresh-Path
+
+    # Verify the binary actually landed — winget sometimes exits 0 without installing
+    if (Test-DBeaVerInstalled) {
+        Write-Success "✅ $Tool installed"
+        Write-Info "  Launch from Start Menu > DBeaver"
+        Write-Info "  Connect to MySQL: New Connection > MySQL > host: localhost"
+        exit 0
+    }
+
+    Write-Warn "⚠️  Package manager reported success but DBeaver binary not found."
+    Write-Warn "   Try installing manually: https://dbeaver.io/download/"
+    exit 1
 
 } catch {
     Write-Err "❌ $Tool installation failed: $_"

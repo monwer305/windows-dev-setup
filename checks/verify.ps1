@@ -7,6 +7,10 @@
 
 $ErrorActionPreference = "Continue"
 
+# Refresh PATH from registry so tools installed in this session (or after terminal launch) are found
+$env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" +
+            [System.Environment]::GetEnvironmentVariable("PATH","User")
+
 function Write-Success { param([string]$m) Write-Host $m -ForegroundColor Green  }
 function Write-Err     { param([string]$m) Write-Host $m -ForegroundColor Red    }
 function Write-Info    { param([string]$m) Write-Host $m -ForegroundColor Cyan   }
@@ -151,8 +155,9 @@ $Checks = @(
             if (Test-CommandExists "nginx") {
                 return (nginx -v 2>&1 | Select-Object -First 1).ToString().Trim()
             }
-            # Probe common install locations (winget & choco)
+            # Probe common install locations (winget shim, choco, manual)
             $exe = Resolve-Exe @(
+                "$env:LOCALAPPDATA\Microsoft\WinGet\Links\nginx.exe",
                 "$env:ProgramFiles\nginx\nginx.exe",
                 "$env:ProgramData\nginx\nginx.exe",
                 "C:\nginx\nginx.exe",
@@ -183,48 +188,6 @@ $Checks = @(
             }
             $svc = Get-Service -Name "MySQL*" -ErrorAction SilentlyContinue
             if ($svc) { return "MySQL service [$($svc.Status)]" }
-            return $null
-        }
-    },
-    @{
-        Name  = "redis"
-        Check = {
-            # Prefer redis-server for version (redis-cli --version silent on some Windows ports)
-            foreach ($cmd in @("redis-server", "redis-cli")) {
-                if (Test-CommandExists $cmd) {
-                    $v = Get-Version $cmd @("--version")
-                    if ($v) { return $v }
-                    return "$cmd (found on PATH)"
-                }
-            }
-            $serverExe = Resolve-Exe @(
-                "$env:ProgramFiles\Redis\redis-server.exe",
-                "$env:ProgramData\chocolatey\bin\redis-server.exe",
-                "$env:ProgramData\chocolatey\lib\redis-64\tools\redis-server.exe"
-            )
-            if ($serverExe) {
-                $v = (& $serverExe --version 2>&1).ToString().Trim()
-                if ($v) { return $v } else { return "redis-server (found at $serverExe)" }
-            }
-            $svc = Get-Service -Name "Redis*" -ErrorAction SilentlyContinue
-            if ($svc) { return "Redis service [$($svc.Status)]" }
-            return $null
-        }
-    },
-    @{
-        Name  = "rabbitmq"
-        Check = {
-            # Service name varies by installer; try broad patterns
-            $svc = Get-Service -ErrorAction SilentlyContinue |
-                   Where-Object { $_.Name -match "rabbit" -or $_.DisplayName -match "RabbitMQ" } |
-                   Select-Object -First 1
-            if ($svc) { return "RabbitMQ service '$($svc.Name)' [$($svc.Status)]" }
-            if (Test-CommandExists "rabbitmqctl") { return "rabbitmqctl (found)" }
-            $exe = Resolve-Exe @(
-                "$env:ProgramFiles\RabbitMQ Server\rabbitmq_server-*\sbin\rabbitmqctl.bat",
-                "$env:ProgramData\chocolatey\bin\rabbitmqctl.bat"
-            )
-            if ($exe) { return "RabbitMQ (found at $exe)" }
             return $null
         }
     },
@@ -264,14 +227,18 @@ $Checks = @(
         Name  = "postman"
         Check = {
             $locations = @(
-                "$env:LOCALAPPDATA\Programs\Postman\Postman.exe",
+                "$env:LOCALAPPDATA\Postman\Postman.exe",           # winget default
+                "$env:LOCALAPPDATA\Programs\Postman\Postman.exe",  # older installs
                 "$env:ProgramFiles\Postman\Postman.exe"
             )
             foreach ($loc in $locations) {
                 if (Test-Path $loc) { return "Postman (found at $loc)" }
             }
-            $wildcard = Get-Item "$env:LOCALAPPDATA\Programs\Postman\app-*\Postman.exe" -ErrorAction SilentlyContinue
-            if ($wildcard) { return "Postman (found)" }
+            # Squirrel versioned subfolder under either base path
+            foreach ($base in @("$env:LOCALAPPDATA\Postman", "$env:LOCALAPPDATA\Programs\Postman")) {
+                $found = Get-Item "$base\app-*\Postman.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($found) { return "Postman (found at $($found.FullName))" }
+            }
             return $null
         }
     },
@@ -279,6 +246,7 @@ $Checks = @(
         Name  = "dbeaver"
         Check = {
             $locations = @(
+                "$env:LOCALAPPDATA\DBeaver\dbeaver.exe",           # winget default (current user)
                 "$env:ProgramFiles\DBeaver\dbeaver.exe",
                 "$env:ProgramFiles\dbeaver-ce\dbeaver.exe",
                 "$env:LOCALAPPDATA\Programs\DBeaver\dbeaver.exe"
@@ -322,6 +290,11 @@ if ($Failed -eq 0) {
 }
 Write-Info "=========================================="
 Write-Info ""
+
+
+
+
+
 
 
 

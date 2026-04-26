@@ -143,6 +143,7 @@ foreach ($Tool in $Tools) {
     }
 
     try {
+        $LASTEXITCODE = 0   # reset so stale codes from previous tools don't bleed in
         if ($Uninstall) {
             & $InstallerPath -Uninstall
         } else {
@@ -229,4 +230,5 @@ if ($FailCount -gt 0) {
 Write-Info "  Duration  : $Duration"
 Write-Info "  Log       : $LogFile"
 Write-Log "Done. OK=$OkCount SKIPPED=$SkipCount FAILED=$FailCount Duration=$Duration"
+
 

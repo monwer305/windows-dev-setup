@@ -22,9 +22,9 @@ Idempotent PowerShell scripts that install a full developer toolchain on Windows
 
 | Profile | Tools installed | Post-install |
 |---|---|---|
-| **microservices** | WSL, Docker, Minikube, kubectl, Helm, Python, Nginx, MySQL, Redis, RabbitMQ, Git, Node, Postman, DBeaver | pip packages (FastAPI, Celery, SQLAlchemy …), `docker pull` for mysql/redis/rabbitmq base images |
+| **microservices** | WSL, Docker, Minikube, kubectl, Helm, Python, Nginx, MySQL, Git, Node, Postman, DBeaver | `docker pull mysql:8.0` |
 | **frontend** | Git, Node, Docker | `npm install -g vercel pnpm typescript` |
-| **data-science** | Git, Python, Docker, MySQL, DBeaver | pip packages (JupyterLab, pandas, scikit-learn …), `docker pull mysql:8.0` |
+| **data-science** | Git, Python, Docker, MySQL, DBeaver |`docker pull mysql:8.0` |
 
 ---
 
@@ -89,8 +89,6 @@ Run at any time, independently of setup:
   ✅ python       Python 3.12.1
   ✅ nginx        nginx/1.27.2
   ✅ mysql        Ver 8.4.8 for Win64 on x86_64
-  ✅ redis        Redis server v=7.4.1
-  ✅ rabbitmq     RabbitMQ service 'RabbitMQ' [Running]
   ✅ git          git version 2.54.0.windows.1
   ✅ node         Node v24.15.0  npm 11.13.0
   ✅ postman      Postman (found)
